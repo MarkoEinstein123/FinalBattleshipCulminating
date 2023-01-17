@@ -22,7 +22,7 @@ GREEN = (0 , 255 , 0)
 ship_positions = []
 count = 0
 font_one = pygame.font.SysFont('comicsans',60, True)
-
+shots_left = 60
 
 def get_font(size): # Returns Press-Start-2P in the desired size
     return pygame.font.Font("font.ttf", size)
@@ -100,10 +100,15 @@ def draw_grid():
       ship_size_number += 1
   
         
-      
-
+def shotsleft():
+  global shots_left
+  SHOTS_LEFT_TEXT = get_font(10).render(str(shots_left) + "/60 Shots Left", True, BLACK)
+  window.blit(SHOTS_LEFT_TEXT, [100,425])
 def ship_location():
   x,y= 0,0
+  #window.fill(LIGHT_BLUE, rect=(0,400,400,50))
+  #SHOTS_LEFT_TEXT = get_font(10).render(str(shots_left) + "/60 Shots Left", True, BLACK)
+  #SHOTS_LEFT_RECT = SHOTS_LEFT_TEXT.get_rect(center=(100, 425))
   for row in grid:
     for col in row:
       #if col == 1:
@@ -128,18 +133,62 @@ def background():
               
 
 def shoot():
+  global shots_left
   mouse = pygame.mouse.get_pos()
   left_click = pygame.mouse.get_pressed()[0]
   
-  if left_click == True: 
+  if left_click == True and mouse[1]<=399: 
     a,b = int(mouse[0]/40), int(mouse[1]/40)
     if grid[b][a] == 1:
       grid[b][a] = 3
-      game_over()
+      game_over_check()
     elif grid[b][a] == 0:
       grid[b][a] = 4
+      shots_left -= 1
 
-def game_over():
+  return shots_left
+def game_over_screen():
+  while True:
+      window.fill(LIGHT_BLUE)
+
+      MENU_MOUSE_POS = pygame.mouse.get_pos()
+
+      MENU_TEXT = get_font(32).render("You Win", True, BLACK)
+      MENU_RECT = MENU_TEXT.get_rect(center=(200, 50))
+
+      HIGHSCORE_TEXT = get_font(10).render("NEW HIGHSCORE!", True, RED)
+      HIGHSCORE_RECT = HIGHSCORE_TEXT.get_rect(center=(200, 80))
+
+      RESTART_BUTTON = Button(image=pygame.image.load("rsz_2play_rect.png"), pos=(200, 130), 
+                          text_input="RESTART", font=get_font(30), base_color="#d7fcd4", hovering_color="White")
+      INFO_BUTTON = Button(image=pygame.image.load("rsz_2play_rect.png"), pos=(200, 230), 
+                          text_input="INFO", font=get_font(30), base_color="#d7fcd4", hovering_color="White")
+      QUIT_BUTTON = Button(image=pygame.image.load("rsz_2play_rect.png"), pos=(200, 330), 
+                          text_input="QUIT", font=get_font(30), base_color="#d7fcd4", hovering_color="White")
+
+      window.blit(MENU_TEXT, MENU_RECT)
+      window.blit(HIGHSCORE_TEXT, HIGHSCORE_RECT)
+      for button in [RESTART_BUTTON, INFO_BUTTON, QUIT_BUTTON]:
+          button.changeColor(MENU_MOUSE_POS)
+          button.update(window)
+      
+      for event in pygame.event.get():
+          if event.type == pygame.QUIT:
+              pygame.quit()
+              sys.exit()
+          if event.type == pygame.MOUSEBUTTONDOWN:
+              if RESTART_BUTTON.checkForInput(MENU_MOUSE_POS):
+                  start_function()
+                  main_game()
+              if INFO_BUTTON.checkForInput(MENU_MOUSE_POS):
+                  info()
+              if QUIT_BUTTON.checkForInput(MENU_MOUSE_POS):
+                  pygame.quit()
+                  sys.exit()
+
+      pygame.display.update()
+  
+def game_over_check():
   count = 0
   x,y= 0,0
   for row in grid:
@@ -150,8 +199,54 @@ def game_over():
   y = y + width    
   x = 0
   if count == 17:
-    quit()
+    game_over_screen()
 
+def info():
+  while True:
+    window.fill(LIGHT_BLUE)
+
+    MENU_MOUSE_POS = pygame.mouse.get_pos()
+
+    BACK_BUTTON = Button(image=pygame.image.load("rsz_2play_rect.png"), pos=(200, 330), 
+                          text_input="BACK", font=get_font(30), base_color="#d7fcd4", hovering_color="White")
+    
+    for button in [BACK_BUTTON]:
+          button.changeColor(MENU_MOUSE_POS)
+          button.update(window)
+
+    for event in pygame.event.get():
+          if event.type == pygame.QUIT:
+              pygame.quit()
+              sys.exit()
+          if event.type == pygame.MOUSEBUTTONDOWN:
+              if BACK_BUTTON.checkForInput(MENU_MOUSE_POS):
+                  main_menu()
+    pygame.display.update()
+
+def pause():
+  while True:
+      window.fill(LIGHT_BLUE)
+  
+      MENU_MOUSE_POS = pygame.mouse.get_pos()
+  
+      BACK_BUTTON = Button(image=pygame.image.load("rsz_2play_rect.png"), pos=(200, 330), 
+                            text_input="BACK", font=get_font(30), base_color="#d7fcd4", hovering_color="White")
+      
+      for button in [BACK_BUTTON]:
+            button.changeColor(MENU_MOUSE_POS)
+            button.update(window)
+  
+      for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if BACK_BUTTON.checkForInput(MENU_MOUSE_POS):
+                    main_game()
+      pygame.display.update()
+
+
+  
 def main_menu():
   while True:
       window.fill(LIGHT_BLUE)
@@ -180,29 +275,32 @@ def main_menu():
               sys.exit()
           if event.type == pygame.MOUSEBUTTONDOWN:
               if PLAY_BUTTON.checkForInput(MENU_MOUSE_POS):
+                  start_function()
                   main_game()
               if INFO_BUTTON.checkForInput(MENU_MOUSE_POS):
-                  quit()
+                  info()
               if QUIT_BUTTON.checkForInput(MENU_MOUSE_POS):
                   pygame.quit()
                   sys.exit()
 
       pygame.display.update()
 
-
+def start_function():
+  background()
+  draw_grid()
 
 def main_game():
   run = True
   background()
-  draw_grid()
   while run:
-      timer.tick(10)
+      timer.tick(60)
       ship_location()
+      shotsleft()
       shoot()
       for event in pygame.event.get():
         if event.type == pygame.KEYDOWN:
           if event.key == pygame.K_SPACE:
-            print("pause")
+            pause()
         if event.type == pygame.QUIT:
           run = False
   
