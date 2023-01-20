@@ -115,9 +115,9 @@ def ship_location():
   #SHOTS_LEFT_RECT = SHOTS_LEFT_TEXT.get_rect(center=(100, 425))
   for row in grid:
     for col in row:
-      if col == 1:
-        pygame.draw.rect(window, BLACK, pygame.Rect(x, y, 40, 40),  2)
-        pygame.draw.rect(window, BLACK, pygame.Rect(x+1, y+1, 38, 38))
+      #if col == 1:
+        #pygame.draw.rect(window, BLACK, pygame.Rect(x, y, 40, 40),  2)
+        #pygame.draw.rect(window, BLACK, pygame.Rect(x+1, y+1, 38, 38))
       if col == 3:
         pygame.draw.rect(window, BLACK, pygame.Rect(x, y, 40, 40),  2)
         pygame.draw.rect(window, RED, pygame.Rect(x+1, y+1, 38, 38))
@@ -153,7 +153,17 @@ def shoot():
       game_over_check()
 
   return shots_left
-  
+def respawn():
+  grid = [[0]*10 for n in range(10)]
+  print(grid)
+  ship_positions = []
+  count = 0
+  shots_left = 0
+  print(shots_left)
+  start_function()
+  main_game()
+  return grid, ship_positions, count, shots_left
+
 def game_over_screen(win_screen):
   global shot_left
   global database
@@ -173,20 +183,20 @@ def game_over_screen(win_screen):
         MENU_TEXT = get_font(32).render("You Lose", True, BLACK)
         MENU_RECT = MENU_TEXT.get_rect(center=(200, 50))
 
-      #if 60 - shots_left < int(database_highscore[0][0]):
-        #HIGHSCORE_TEXT = get_font(10).render("NEW HIGHSCORE!", True, RED)
-        #HIGHSCORE_RECT = HIGHSCORE_TEXT.get_rect(center=(200, 80))
-        #window.blit(HIGHSCORE_TEXT, HIGHSCORE_RECT)
+      if 60 - shots_left < int(database_highscore[0][0]):
+        HIGHSCORE_TEXT = get_font(10).render("NEW HIGHSCORE!", True, RED)
+        HIGHSCORE_RECT = HIGHSCORE_TEXT.get_rect(center=(200, 80))
+        window.blit(HIGHSCORE_TEXT, HIGHSCORE_RECT)
 
       RESTART_BUTTON = Button(image=pygame.image.load("rsz_2play_rect.png"), pos=(200, 130), 
                           text_input="RESTART", font=get_font(30), base_color="#d7fcd4", hovering_color="White")
-      INFO_BUTTON = Button(image=pygame.image.load("rsz_2play_rect.png"), pos=(200, 230), 
-                          text_input="INFO", font=get_font(30), base_color="#d7fcd4", hovering_color="White")
+      MENU_BUTTON = Button(image=pygame.image.load("rsz_2play_rect.png"), pos=(200, 230), 
+                          text_input="MENU", font=get_font(30), base_color="#d7fcd4", hovering_color="White")
       QUIT_BUTTON = Button(image=pygame.image.load("rsz_2play_rect.png"), pos=(200, 330), 
                           text_input="QUIT", font=get_font(30), base_color="#d7fcd4", hovering_color="White")
 
       window.blit(MENU_TEXT, MENU_RECT)
-      for button in [RESTART_BUTTON, INFO_BUTTON, QUIT_BUTTON]:
+      for button in [RESTART_BUTTON, MENU_BUTTON, QUIT_BUTTON]:
           button.changeColor(MENU_MOUSE_POS)
           button.update(window)
       
@@ -196,10 +206,9 @@ def game_over_screen(win_screen):
               sys.exit()
           if event.type == pygame.MOUSEBUTTONDOWN:
               if RESTART_BUTTON.checkForInput(MENU_MOUSE_POS):
-                  start_function()
-                  main_game()
-              if INFO_BUTTON.checkForInput(MENU_MOUSE_POS):
-                  info()
+                  respawn()
+              if MENU_BUTTON.checkForInput(MENU_MOUSE_POS):
+                  main_menu()
               if QUIT_BUTTON.checkForInput(MENU_MOUSE_POS):
                   pygame.quit()
                   sys.exit()
@@ -227,11 +236,11 @@ def game_over_check():
 
 def info():
   while True:
-    window.fill(LIGHT_BLUE)
-
+    instructions_background = pygame.image.load("instructions.png").convert()
+    window.blit(instructions_background, (0, 0))
     MENU_MOUSE_POS = pygame.mouse.get_pos()
 
-    BACK_BUTTON = Button(image=pygame.image.load("rsz_2play_rect.png"), pos=(200, 330), 
+    BACK_BUTTON = Button(image=pygame.image.load("rsz_2play_rect.png"), pos=(200, 390), 
                           text_input="BACK", font=get_font(30), base_color="#d7fcd4", hovering_color="White")
     
     for button in [BACK_BUTTON]:
@@ -270,8 +279,9 @@ def pause():
       pygame.display.update()
 
 
-  
+
 def main_menu():
+  database_highscore = database.read_file()
   while True:
       window.fill(LIGHT_BLUE)
 
@@ -280,6 +290,9 @@ def main_menu():
       MENU_TEXT = get_font(32).render("Battleships", True, BLACK)
       MENU_RECT = MENU_TEXT.get_rect(center=(200, 50))
 
+      HIGHSCORE_TEXT = get_font(10).render("Highscore:" + database_highscore[0][0], True, RED)
+      HIGHSCORE_RECT = HIGHSCORE_TEXT.get_rect(center=(200,75))
+      
       PLAY_BUTTON = Button(image=pygame.image.load("rsz_2play_rect.png"), pos=(200, 130), 
                           text_input="PLAY", font=get_font(30), base_color="#d7fcd4", hovering_color="White")
       INFO_BUTTON = Button(image=pygame.image.load("rsz_2play_rect.png"), pos=(200, 230), 
@@ -288,6 +301,7 @@ def main_menu():
                           text_input="QUIT", font=get_font(30), base_color="#d7fcd4", hovering_color="White")
 
       window.blit(MENU_TEXT, MENU_RECT)
+      window.blit(HIGHSCORE_TEXT, HIGHSCORE_RECT)
 
       for button in [PLAY_BUTTON, INFO_BUTTON, QUIT_BUTTON]:
           button.changeColor(MENU_MOUSE_POS)
