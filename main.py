@@ -4,6 +4,8 @@ import time
 import os
 import pygame, sys
 from button import Button
+import database
+
 
 #Basic Grid Setup and System
 pygame.init()
@@ -102,8 +104,10 @@ def draw_grid():
         
 def shotsleft():
   global shots_left
+  window.fill(LIGHT_BLUE, rect=(0,400,400,50))
   SHOTS_LEFT_TEXT = get_font(10).render(str(shots_left) + "/60 Shots Left", True, BLACK)
   window.blit(SHOTS_LEFT_TEXT, [100,425])
+
 def ship_location():
   x,y= 0,0
   #window.fill(LIGHT_BLUE, rect=(0,400,400,50))
@@ -111,9 +115,9 @@ def ship_location():
   #SHOTS_LEFT_RECT = SHOTS_LEFT_TEXT.get_rect(center=(100, 425))
   for row in grid:
     for col in row:
-      #if col == 1:
-        #pygame.draw.rect(window, BLACK, pygame.Rect(x, y, 40, 40),  2)
-       #pygame.draw.rect(window, BLACK, pygame.Rect(x+1, y+1, 38, 38))
+      if col == 1:
+        pygame.draw.rect(window, BLACK, pygame.Rect(x, y, 40, 40),  2)
+        pygame.draw.rect(window, BLACK, pygame.Rect(x+1, y+1, 38, 38))
       if col == 3:
         pygame.draw.rect(window, BLACK, pygame.Rect(x, y, 40, 40),  2)
         pygame.draw.rect(window, RED, pygame.Rect(x+1, y+1, 38, 38))
@@ -141,23 +145,38 @@ def shoot():
     a,b = int(mouse[0]/40), int(mouse[1]/40)
     if grid[b][a] == 1:
       grid[b][a] = 3
+      shots_left -= 1
       game_over_check()
     elif grid[b][a] == 0:
       grid[b][a] = 4
       shots_left -= 1
+      game_over_check()
 
   return shots_left
-def game_over_screen():
+  
+def game_over_screen(win_screen):
+  global shot_left
+  global database
+
+  if 60 - shots_left < int(database_highscore[0][0]):
+    database.write_table(shots_left)
   while True:
       window.fill(LIGHT_BLUE)
 
       MENU_MOUSE_POS = pygame.mouse.get_pos()
 
-      MENU_TEXT = get_font(32).render("You Win", True, BLACK)
-      MENU_RECT = MENU_TEXT.get_rect(center=(200, 50))
+      if win_screen == True:
+        MENU_TEXT = get_font(32).render("You Win", True, BLACK)
+        MENU_RECT = MENU_TEXT.get_rect(center=(200, 50))
 
-      HIGHSCORE_TEXT = get_font(10).render("NEW HIGHSCORE!", True, RED)
-      HIGHSCORE_RECT = HIGHSCORE_TEXT.get_rect(center=(200, 80))
+      if win_screen == False:
+        MENU_TEXT = get_font(32).render("You Lose", True, BLACK)
+        MENU_RECT = MENU_TEXT.get_rect(center=(200, 50))
+
+      #if 60 - shots_left < int(database_highscore[0][0]):
+        #HIGHSCORE_TEXT = get_font(10).render("NEW HIGHSCORE!", True, RED)
+        #HIGHSCORE_RECT = HIGHSCORE_TEXT.get_rect(center=(200, 80))
+        #window.blit(HIGHSCORE_TEXT, HIGHSCORE_RECT)
 
       RESTART_BUTTON = Button(image=pygame.image.load("rsz_2play_rect.png"), pos=(200, 130), 
                           text_input="RESTART", font=get_font(30), base_color="#d7fcd4", hovering_color="White")
@@ -167,7 +186,6 @@ def game_over_screen():
                           text_input="QUIT", font=get_font(30), base_color="#d7fcd4", hovering_color="White")
 
       window.blit(MENU_TEXT, MENU_RECT)
-      window.blit(HIGHSCORE_TEXT, HIGHSCORE_RECT)
       for button in [RESTART_BUTTON, INFO_BUTTON, QUIT_BUTTON]:
           button.changeColor(MENU_MOUSE_POS)
           button.update(window)
@@ -189,6 +207,7 @@ def game_over_screen():
       pygame.display.update()
   
 def game_over_check():
+  global shots_left
   count = 0
   x,y= 0,0
   for row in grid:
@@ -199,7 +218,12 @@ def game_over_check():
   y = y + width    
   x = 0
   if count == 17:
-    game_over_screen()
+    win_screen = True
+    game_over_screen(win_screen)
+    return count
+  elif shots_left == 0:
+    win_screen = False
+    game_over_screen(win_screen)
 
 def info():
   while True:
@@ -311,6 +335,7 @@ def main_game():
       pygame.display.flip()
   pygame.quit()
 
-
+database_highscore = database.read_file()
+print(database_highscore)
 main_menu()
   
