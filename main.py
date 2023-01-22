@@ -1,3 +1,9 @@
+#Name: Marko Kosoric
+#Date: January 21, 2023
+#Program Name: Culminating - Battleships
+#Purpose: To make a Battleship game with pygame that has data persistance.
+
+
 #imports
 import random
 from random import randint
@@ -12,7 +18,7 @@ import database
 pygame.init()
 bounds = (400,450)
 window = pygame.display.set_mode(bounds)
-pygame.display.set_caption("Battleships")
+pygame.display.set_caption("Battleship")
 timer = pygame.time.Clock()
 fps = 60
 grid = [[0]*10 for n in range(10)]
@@ -318,7 +324,7 @@ def main_menu():
 
       MENU_MOUSE_POS = pygame.mouse.get_pos()
       #Text variables.
-      MENU_TEXT = get_font(32).render("Battleships", True, BLACK)
+      MENU_TEXT = get_font(32).render("Battleship", True, BLACK)
       MENU_RECT = MENU_TEXT.get_rect(center=(200, 50))
 
       HIGHSCORE_TEXT = get_font(10).render("Highscore:" + database_highscore[0][0], True, RED)
