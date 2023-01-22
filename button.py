@@ -1,4 +1,4 @@
-#Button Setup
+#Button setup.
 class Button():
 	def __init__(self, image, pos, text_input, font, base_color, hovering_color):
 		self.image = image
@@ -12,7 +12,7 @@ class Button():
 			self.image = self.text
 		self.rect = self.image.get_rect(center=(self.x_pos, self.y_pos))
 		self.text_rect = self.text.get_rect(center=(self.x_pos, self.y_pos))
-
+#Displays button.
 	def update(self, screen):
 		if self.image is not None:
 			screen.blit(self.image, self.rect)

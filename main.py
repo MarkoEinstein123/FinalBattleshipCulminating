@@ -123,7 +123,14 @@ def shotsleft():
   global shots_left
   window.fill(LIGHT_BLUE, rect=(0,400,400,50))
   SHOTS_LEFT_TEXT = get_font(10).render(str(shots_left) + "/60 Shots Left", True, BLACK)
-  window.blit(SHOTS_LEFT_TEXT, [100,425])
+  window.blit(SHOTS_LEFT_TEXT, [10,410])
+  MISS_TEXT = get_font(10).render("Miss:", True, BLACK)
+  window.blit(MISS_TEXT, [10,430])
+  window.fill((0,0,255), rect=(60,430, 10,10))
+  HIT_TEXT = get_font(10).render("Hit:", True, BLACK)
+  window.blit(HIT_TEXT, [345,430])
+  window.fill(RED, rect=(385,430, 10,10))
+  
 
 #draws the grid and determines colour based on if grid has a ship, does not have a ship, or has not been clicked yet.
 def ship_location():
@@ -156,6 +163,27 @@ def ship_location():
 def background():
   window.fill(LIGHT_BLUE)
   pygame.display.flip()
+
+#if all parts of a ship have been shot it is sunk and we later increment the sinking sequence
+def check_for_ship_sunk(row, col):
+  global ship_positions
+  global grid
+  
+  for position in ship_positions:
+    start_row = position[0]
+    end_row = position[1]
+    start_col = position[2]
+    end_col = position[3]
+
+    if start_row <= row <= end_row and start_col <= col <= end_col:
+      #ship has been found, now checks if it has sunk
+      for r in range(start_row, end_row):
+        for c in range(start_col, end_col):
+          if grid[r][c] != "3":
+            return False
+  
+  return True
+
               
 #If the left mouse button has been hit, takes the x and y coordinate of the mosue position, divides it by 40 to correspond with the array, sees if there is a ship or not on that square and returns a colour. Also subtracts a shot from the shots left counter if a square is cliked.  
 def shoot():
@@ -170,27 +198,20 @@ def shoot():
       grid[b][a] = 3
       shots_left -= 1
       game_over_check()
+      if check_for_ship_sunk(a,b):
+        print("hi")
+      else:
+        print("no")
     elif grid[b][a] == 0:
       grid[b][a] = 4
       shots_left -= 1
       game_over_check()
-
   return shots_left
-def respawn():
-  grid = [[0]*10 for n in range(10)]
-  print(grid)
-  ship_positions = []
-  count = 0
-  shots_left = 60
-  print(shots_left)
-  main_game()
-  start_function()
-  return grid, ship_positions, count, shots_left
 
 #Displays game over screen once the game is over.
 def game_over_screen(win_screen):
+  database_highscore = database.read_file()
   global shot_left
-  global database
   #If players has completed the game in less shots than the number in database, calls the write_table function.
   if 60 - shots_left < int(database_highscore[0][0]):
     database.write_table(shots_left)
@@ -199,29 +220,34 @@ def game_over_screen(win_screen):
       window.fill(LIGHT_BLUE)
 
       MENU_MOUSE_POS = pygame.mouse.get_pos()
-      #If the requirements to win the game are met, "You Win" is printed.
+      #If the requirements to win the game are met, "You Win" and highscore is printed.
       if win_screen == True:
         MENU_TEXT = get_font(32).render("You Win", True, BLACK)
-        MENU_RECT = MENU_TEXT.get_rect(center=(200, 50))
+        MENU_RECT = MENU_TEXT.get_rect(center=(200, 100))
+        BESTSCORE_TEXT = get_font(10).render("HIGHSCORE:" + database_highscore[0][0] ,True, RED)
+        BESTSCORE_RECT = BESTSCORE_TEXT.get_rect(center=(200, 130))
+        window.blit(BESTSCORE_TEXT, BESTSCORE_RECT)
       #If the requirements to win the game are not met, "You Lose" is printed.
       if win_screen == False:
         MENU_TEXT = get_font(32).render("You Lose", True, BLACK)
-        MENU_RECT = MENU_TEXT.get_rect(center=(200, 50))
+        MENU_RECT = MENU_TEXT.get_rect(center=(200, 100))
+        BESTSCORE_TEXT = get_font(10).render("HIGHSCORE:" + database_highscore[0][0] ,True, RED)
+        BESTSCORE_RECT = BESTSCORE_TEXT.get_rect(center=(200, 130))
+        window.blit(BESTSCORE_TEXT, BESTSCORE_RECT)
       #If players has completed the game in less shots than the number in database, prints "NEW HIGHSCORE!".
       if 60 - shots_left < int(database_highscore[0][0]):
         HIGHSCORE_TEXT = get_font(10).render("NEW HIGHSCORE!", True, RED)
-        HIGHSCORE_RECT = HIGHSCORE_TEXT.get_rect(center=(200, 80))
+        HIGHSCORE_RECT = HIGHSCORE_TEXT.get_rect(center=(200, 130))
         window.blit(HIGHSCORE_TEXT, HIGHSCORE_RECT)
+        
       #Button variables. Calls button function to create button.
-      RESTART_BUTTON = Button(image=pygame.image.load("rsz_2play_rect.png"), pos=(200, 130), 
-                          text_input="RESTART", font=get_font(30), base_color="#d7fcd4", hovering_color="White")
-      MENU_BUTTON = Button(image=pygame.image.load("rsz_2play_rect.png"), pos=(200, 230), 
-                          text_input="MENU", font=get_font(30), base_color="#d7fcd4", hovering_color="White")
-      QUIT_BUTTON = Button(image=pygame.image.load("rsz_2play_rect.png"), pos=(200, 330), 
+      INFO_BUTTON = Button(image=pygame.image.load("rsz_2play_rect.png"), pos=(200, 180), 
+                          text_input="INFO", font=get_font(30), base_color="#d7fcd4", hovering_color="White")
+      QUIT_BUTTON = Button(image=pygame.image.load("rsz_2play_rect.png"), pos=(200, 280), 
                           text_input="QUIT", font=get_font(30), base_color="#d7fcd4", hovering_color="White")
       #Displays text and button and changes colour if cursor hovers over the button.
       window.blit(MENU_TEXT, MENU_RECT)
-      for button in [RESTART_BUTTON, MENU_BUTTON, QUIT_BUTTON]:
+      for button in [INFO_BUTTON, QUIT_BUTTON]:
           button.changeColor(MENU_MOUSE_POS)
           button.update(window)
       #If the game is quit, then the program stops.
@@ -231,11 +257,8 @@ def game_over_screen(win_screen):
               sys.exit()
           #If button is clicked then calls functions.
           if event.type == pygame.MOUSEBUTTONDOWN:
-              if RESTART_BUTTON.checkForInput(MENU_MOUSE_POS):
-                  start_function()
-                  main_game()
-              if MENU_BUTTON.checkForInput(MENU_MOUSE_POS):
-                  main_menu()
+              if INFO_BUTTON.checkForInput(MENU_MOUSE_POS):
+                  info()
               if QUIT_BUTTON.checkForInput(MENU_MOUSE_POS):
                   pygame.quit()
                   sys.exit()
@@ -381,8 +404,7 @@ def main_game():
         #If games is quit, then quits the game.
         if event.type == pygame.QUIT:
           pygame.quit()
-          sys.quit()
-  
+          sys.quit() 
   
   
   
