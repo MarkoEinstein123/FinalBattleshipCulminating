@@ -1,3 +1,4 @@
+#imports
 from tabulate import tabulate
 import os
 import sqlite3
@@ -5,18 +6,18 @@ import sys
 import tty
 import termios
 
-#database variables
+#Database variables.
 global database
 database_highscore = []
 database_file = "database.txt"
 
-#writes to the database.txt file using updated database.txt file
+#Writes to the database.txt file using updated database.txt file.
 def write_file():
     with open(database_file, "w") as txt_file:
         for line in database:
             txt_file.write(",".join(line) + "\n")
 
-#reads the database.txt file and returns the values as database
+#Reads the database.txt file and returns the values as database.
 def read_file():
     try:
         with open(database_file, 'r') as read_file:
@@ -27,7 +28,7 @@ def read_file():
     except FileNotFoundError:
         print("File does not exist")
 
-
+#Deletes row 0 in databse array and appends new value.
 def write_table(shots_left):
     highscore = 60 - shots_left 
     database.pop(0)
