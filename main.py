@@ -34,7 +34,7 @@ BlUE = (0,0,255)
 BLACK = (0 , 0 , 0)
 RED = (255 , 0 , 0)
 GREEN = (0 , 255 , 0)
-
+win_screen = 0
 # Returns Press-Start-2P in the desired size
 def get_font(size): 
     return pygame.font.Font("font.ttf", size)
@@ -221,14 +221,14 @@ def game_over_screen(win_screen):
 
       MENU_MOUSE_POS = pygame.mouse.get_pos()
       #If the requirements to win the game are met, "You Win" and highscore is printed.
-      if win_screen == True:
+      if win_screen == 1:
         MENU_TEXT = get_font(32).render("You Win", True, BLACK)
         MENU_RECT = MENU_TEXT.get_rect(center=(200, 100))
         BESTSCORE_TEXT = get_font(10).render("HIGHSCORE:" + database_highscore[0][0] ,True, RED)
         BESTSCORE_RECT = BESTSCORE_TEXT.get_rect(center=(200, 130))
         window.blit(BESTSCORE_TEXT, BESTSCORE_RECT)
       #If the requirements to win the game are not met, "You Lose" is printed.
-      if win_screen == False:
+      if win_screen == 2:
         MENU_TEXT = get_font(32).render("You Lose", True, BLACK)
         MENU_RECT = MENU_TEXT.get_rect(center=(200, 100))
         BESTSCORE_TEXT = get_font(10).render("HIGHSCORE:" + database_highscore[0][0] ,True, RED)
@@ -258,7 +258,8 @@ def game_over_screen(win_screen):
           #If button is clicked then calls functions.
           if event.type == pygame.MOUSEBUTTONDOWN:
               if INFO_BUTTON.checkForInput(MENU_MOUSE_POS):
-                  info()
+                  info_choice = 2
+                  info(info_choice)
               if QUIT_BUTTON.checkForInput(MENU_MOUSE_POS):
                   pygame.quit()
                   sys.exit()
@@ -266,6 +267,7 @@ def game_over_screen(win_screen):
       pygame.display.update()
 #Checks if game shoud be over.  
 def game_over_check():
+  global win_screen
   global shots_left
   count = 0
   x,y= 0,0
@@ -278,16 +280,18 @@ def game_over_check():
   y = y + width    
   x = 0
   if count == 17:
-    win_screen = True
+    win_screen = 1
     game_over_screen(win_screen)
     return count
   #If player runs out of shots, game ends and player loses.
   elif shots_left == 0:
-    win_screen = False
+    win_screen = 2
     game_over_screen(win_screen)
+  return win_screen
 
 #Displays instructions of the game.
-def info():
+def info(info_choice):
+  global win_screen
   while True:
     #loads instructions image
     instructions_background = pygame.image.load("instructions.png").convert()
@@ -307,8 +311,12 @@ def info():
               sys.exit()
           #If button is clicked then calls functions.
           if event.type == pygame.MOUSEBUTTONDOWN:
+              #If the info screen was called from main menu, info_choice will be set to 1 which will make it so the back button leads to the main menu. Same for if the info screen was called from the game over screen but with 2.
               if BACK_BUTTON.checkForInput(MENU_MOUSE_POS):
+                if info_choice == 1:
                   main_menu()
+                elif info_choice == 2:
+                  game_over_screen(win_screen)
     #Updates display.
     pygame.display.update()
 
@@ -319,6 +327,10 @@ def pause():
       window.fill(LIGHT_BLUE)
 
       MENU_MOUSE_POS = pygame.mouse.get_pos()
+      #displays "Paused"
+      PAUSE_TEXT = get_font(50).render("Paused", True, BLACK)
+      PAUSE_RECT = PAUSE_TEXT.get_rect(center=(200, 150))
+      window.blit(PAUSE_TEXT, PAUSE_RECT)
       #Button variables. Calls button function to create button.
       BACK_BUTTON = Button(image=pygame.image.load("rsz_2play_rect.png"), pos=(200, 330), 
                             text_input="BACK", font=get_font(30), base_color="#d7fcd4", hovering_color="White")
@@ -377,7 +389,8 @@ def main_menu():
                   start_function()
                   main_game()
               if INFO_BUTTON.checkForInput(MENU_MOUSE_POS):
-                  info()
+                  info_choice = 1
+                  info(info_choice)
               if QUIT_BUTTON.checkForInput(MENU_MOUSE_POS):
                   pygame.quit()
                   sys.exit()
